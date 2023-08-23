@@ -25,7 +25,7 @@ var response = client.PostAsync("https://accounts.spotify.com/api/token", conten
 var responseContent = response.Content.ReadAsStringAsync().Result;
 
 Token accessToken = JsonSerializer.Deserialize<Token>(responseContent);
-// Console.WriteLine(responseContent);
+
 Console.WriteLine("Access token = "+ accessToken.access_token);
 
 /*************************************************/
@@ -41,6 +41,14 @@ response = client.SendAsync(message).Result;
 
 responseContent = response.Content.ReadAsStringAsync().Result;
 
+SpotifyResponse totalResponse = JsonSerializer.Deserialize<SpotifyResponse>(responseContent);
+
 Console.WriteLine(responseContent);
+
+Console.WriteLine($"response total = {totalResponse.Total}");
+Console.WriteLine($"response limit = {totalResponse.Limit}");
+Console.WriteLine($"items length = {totalResponse.Items.Count}");
+Console.WriteLine($"response track = {totalResponse.Items[0].Track.Name}");
+Console.WriteLine($"response artist = {totalResponse.Items[0].Track.Artists[0].Name}");
 
 

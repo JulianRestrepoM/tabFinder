@@ -18,7 +18,7 @@ public class Item {
     public required Track Track {get; set;}
 }
 
-public class SpotifyResponse {
+public class SpotifyPlaylistResponse {
     [JsonPropertyName("items")]
     public required List<Item> Items {get; set;}
     [JsonPropertyName("limit")]
@@ -27,5 +27,12 @@ public class SpotifyResponse {
     public required int Total {get; set;}
 }
 
-
+class Token {
+    [JsonPropertyName("access_token")]
+    public required string AccessToken {get; set;}
+    [JsonPropertyName("token_type")]
+    public required string TokenType {get; set;}
+    [JsonPropertyName("expires_in")]
+    public int ExpiresIn{get; set;}
+}
 

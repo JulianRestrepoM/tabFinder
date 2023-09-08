@@ -43,7 +43,7 @@ class Token {
 class SpotifyApi {
     private const string ClientId = "6e91c3589c6040da9d24780524804018";
     private const string ClientSecret = "12e41af7e4be4e3e8d7907f2bffc1fa2";
-    private const int maxLimit = 50;
+    private const int maxLimit = 50; //given by spotify documentation
     private HttpClient client;
     public SpotifyApi(HttpClient client) {
         this.client = client;

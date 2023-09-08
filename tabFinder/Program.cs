@@ -5,6 +5,8 @@ using System.Text.Json;
 using System.Text.Unicode;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using System.Threading;
+using Google.Apis.YouTube.v3;
+using Google.Apis.Services;
 
 Console.WriteLine("Welcome to TAB Finder!");
 
@@ -31,4 +33,14 @@ foreach(Item i in songList) {
 Console.WriteLine($"SAVED SONGS AMOUNT = {songList.Count}");
 
 /***********************************************************///
+
+string appName = "Tab Finder";
+string googleAPIkey = "AIzaSyBPtgi0C3wGzBKlYd-sS3ERGSwVMK33niA";
+
+var googleClient = new YouTubeService(new BaseClientService.Initializer {
+    ApplicationName = appName,
+    ApiKey = googleAPIkey,
+});
+
+Console.WriteLine($"google api keeeyy = {googleClient.ApiKey}");
 

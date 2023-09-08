@@ -94,7 +94,7 @@ class SpotifyApi {
         
         while(remainingSongs > 0) {
             Console.WriteLine($"REMAING SONGS = {remainingSongs}");
-            Thread.Sleep(1000); //can cancel if infinite loop
+            // Thread.Sleep(1000); //can cancel if infinite loop
             if(remainingSongs >= maxLimit) {
                 spotifyResponse = sendHttpGet(playlistId, maxLimit, offset, accessToken);
                 remainingSongs -= maxLimit;

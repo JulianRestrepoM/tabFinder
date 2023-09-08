@@ -47,8 +47,6 @@ using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurr
 
 string appName = "Tab Finder";
 string googleAPIkey = "AIzaSyBPtgi0C3wGzBKlYd-sS3ERGSwVMK33niA";
-string martyMusicID = "UCmnlTWVJysjWPFiZhQ5uudg";
-string martyMusicUploads = "UUmnlTWVJysjWPFiZhQ5uudg";
 
 var youTubeService = new YouTubeService(new BaseClientService.Initializer { //initializes the youtube client with the API key
     ApplicationName = appName,
@@ -56,29 +54,38 @@ var youTubeService = new YouTubeService(new BaseClientService.Initializer { //in
 });
 
 
+string[] channelList = File.ReadAllLines(Path.Combine(Directory.GetCurrentDirectory()+"/files", "channels.txt"));
+
+
 List<PlaylistItem> youtubeVidList = new();
 
-var nextPageToken = "";
+
 int savedVidsAmount = 0;
+foreach(string currChannel in channelList) {
 
-//the get requests and saving the response to a list
-while(nextPageToken != null) {
-    // Thread.Sleep(500); //so i have time to cancel
-    var channelVidsRequest = youTubeService.PlaylistItems.List("snippet,contentDetails");
-    channelVidsRequest.PlaylistId = martyMusicUploads;
-    channelVidsRequest.MaxResults = 50;
-    channelVidsRequest.PageToken = nextPageToken;
+    string currPlayListId = currChannel.Substring(0, currChannel.IndexOf(","));
 
-    var channelVidsResponse = await channelVidsRequest.ExecuteAsync();
+    var nextPageToken = "";
+    //the get requests and saving the response to a list
+    while(nextPageToken != null) {
+        // Thread.Sleep(500); //so i have time to cancel
+        var channelVidsRequest = youTubeService.PlaylistItems.List("snippet,contentDetails");
+        channelVidsRequest.PlaylistId = currPlayListId;
+        channelVidsRequest.MaxResults = 50;
+        channelVidsRequest.PageToken = nextPageToken;
 
-    foreach(var vid in channelVidsResponse.Items) {
-        youtubeVidList.Add(vid);
-        savedVidsAmount++;
-    }
-    Console.WriteLine($"SAVED {savedVidsAmount} Vids");
+        var channelVidsResponse = await channelVidsRequest.ExecuteAsync();
+
+        foreach(var vid in channelVidsResponse.Items) {
+            youtubeVidList.Add(vid);
+            savedVidsAmount++;
+        }
+        Console.WriteLine("Saved "+savedVidsAmount+" vids"+ " from "+ currChannel);
     
-    nextPageToken = channelVidsResponse.NextPageToken; //uses token to get the next set of videos
+        nextPageToken = channelVidsResponse.NextPageToken; //uses token to get the next set of videos
+    }
 }
+
 
 string youtubePrefix = "https://www.youtube.com/watch?v=";
 

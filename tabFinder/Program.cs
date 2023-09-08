@@ -37,7 +37,7 @@ using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurr
         foreach(Artist currArtist in currSong.Track.Artists.Skip(1)) {
             artists += $", {currArtist.Name}";
         }
-        outputFile.WriteLine($"{currSong.Track.Name.ToUpper()} - {artists}");
+        outputFile.WriteLine($"{currSong.Track.Name.ToUpper()} - {artists}"); //seperate song title and artist by " - "
 
     }
 }
@@ -64,7 +64,7 @@ int savedVidsAmount = 0;
 //the get requests and saving the response to a list
 while(nextPageToken != null) {
     // Thread.Sleep(500); //so i have time to cancel
-    var channelVidsRequest = youTubeService.PlaylistItems.List("snippet");
+    var channelVidsRequest = youTubeService.PlaylistItems.List("snippet,contentDetails");
     channelVidsRequest.PlaylistId = martyMusicUploads;
     channelVidsRequest.MaxResults = 50;
     channelVidsRequest.PageToken = nextPageToken;
@@ -80,10 +80,12 @@ while(nextPageToken != null) {
     nextPageToken = channelVidsResponse.NextPageToken; //uses token to get the next set of videos
 }
 
+string youtubePrefix = "https://www.youtube.com/watch?v=";
+
 //adds the videos from the list to a .txt
-using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurrentDirectory(), "videoList.txt"))) {
+using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurrentDirectory()+"/files", "videoList.txt"))) {
     foreach(PlaylistItem currVid in youtubeVidList) {
-        outputFile.WriteLine(currVid.Snippet.Title);
+        outputFile.WriteLine(currVid.Snippet.Title+","+currVid.Snippet.ChannelTitle+","+youtubePrefix+currVid.ContentDetails.VideoId);
     }
 }
 
@@ -99,10 +101,19 @@ using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurr
         outputFile.WriteLine(currSong);
         foreach(string currVid in vidList) {
             if(currVid.ToUpper().Contains(currSong.Substring(0, currSong.IndexOf("-")-1))) { //only doing exact matches to song title, all in uppercase for ease of matching
-                outputFile.WriteLine($"     {currVid}");
+                //add the channel, title. and link to the video in a nice format
+                int firstIndex = currVid.IndexOf(",");
+                int secondIndex = currVid.IndexOf(",", firstIndex+1);
+                int length = currVid.Length;
+                string channel = currVid.Substring(firstIndex+1, secondIndex-firstIndex);
+                string url = currVid.Substring(secondIndex+1);
+                string title = currVid.Substring(0, firstIndex);
+                outputFile.WriteLine("     "+channel);
+                outputFile.WriteLine("          "+title);
+                outputFile.WriteLine("          "+url);
             }
         }
-        outputFile.WriteLine("");
+        outputFile.WriteLine(""); //empty space between songs
     }
 }
 

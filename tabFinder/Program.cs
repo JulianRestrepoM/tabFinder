@@ -16,97 +16,47 @@ Console.WriteLine("Welcome to TAB Finder!");
 /***********************************************************/
 /* Save songs from given spotify playlist to songList.txt*/
 
-HttpClient client = new();
-SpotifyApi spotifyApi= new SpotifyApi(client);
+string playlistId = "2jIOsU05KQRhTiHVjxpMns"; //put the playlist id
+string songListFilepath = Path.Combine(Directory.GetCurrentDirectory()+"/files", "songList.txt");
 
-Token accessToken = spotifyApi.GetAccessToken();
+if(!File.Exists(songListFilepath)) {
+    HttpClient client = new();
+    SpotifyApi spotifyApi= new SpotifyApi(client);
 
-string playlistId = "5qUj0OW96Y0Vyc3SUlXY6B"; //Julian's Stoner metal +
+    Token accessToken = spotifyApi.GetAccessToken();
+                    
+    List<Item> songListSpotify = spotifyApi.GetSongList(playlistId, accessToken);
 
-List<Item> songListSpotify = spotifyApi.GetSongList(playlistId, accessToken);
-
-//copies songs from list to file
-using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurrentDirectory()+"/files", "songList.txt"))) {
-    foreach(Item currSong in songListSpotify) {
-        if(currSong.Track.Name.Contains("-")) { //some titles have extra info like Iron man - 2012 remastered, we want to remove everything after the -
-            int index = currSong.Track.Name.IndexOf("-");
-            currSong.Track.Name = currSong.Track.Name.Substring(0, index-1); //-1 to also remove the space before -
-        }
-        string artists = currSong.Track.Artists[0].Name;
-        string toWrite = currSong.Track.Name;
-        foreach(Artist currArtist in currSong.Track.Artists.Skip(1)) {
-            artists += $", {currArtist.Name}";
-        }
-        outputFile.WriteLine($"{currSong.Track.Name.ToUpper()} - {artists}"); //seperate song title and artist by " - "
-
-    }
+    spotifyApi.SaveSongs(songListFilepath, songListSpotify);  
 }
+
+
 
 /***********************************************************/
 /*Downloads every video from a youtube channel and then adds them to videoList.txt*/
 
-string appName = "Tab Finder";
-string googleAPIkey = "AIzaSyBPtgi0C3wGzBKlYd-sS3ERGSwVMK33niA";
+string channelListFilepath = Path.Combine(Directory.GetCurrentDirectory()+"/files", "channels.txt");
+string videoListFilepath = Path.Combine(Directory.GetCurrentDirectory()+"/files", "videoList.txt");
 
-var youTubeService = new YouTubeService(new BaseClientService.Initializer { //initializes the youtube client with the API key
-    ApplicationName = appName,
-    ApiKey = googleAPIkey,
-});
+if(!File.Exists(videoListFilepath)) {
+    YoutubeApi youtubeApi = new YoutubeApi();
 
+    List<PlaylistItem> videoList = youtubeApi.GetVideosList(channelListFilepath);
 
-string[] channelList = File.ReadAllLines(Path.Combine(Directory.GetCurrentDirectory()+"/files", "channels.txt"));
-
-
-List<PlaylistItem> youtubeVidList = new();
-
-
-int savedVidsAmount = 0;
-foreach(string currChannel in channelList) {
-
-    string currPlayListId = currChannel.Substring(0, currChannel.IndexOf(","));
-
-    var nextPageToken = "";
-    //the get requests and saving the response to a list
-    while(nextPageToken != null) {
-        // Thread.Sleep(500); //so i have time to cancel
-        var channelVidsRequest = youTubeService.PlaylistItems.List("snippet,contentDetails");
-        channelVidsRequest.PlaylistId = currPlayListId;
-        channelVidsRequest.MaxResults = 50;
-        channelVidsRequest.PageToken = nextPageToken;
-
-        var channelVidsResponse = await channelVidsRequest.ExecuteAsync();
-
-        foreach(var vid in channelVidsResponse.Items) {
-            youtubeVidList.Add(vid);
-            savedVidsAmount++;
-        }
-        Console.WriteLine("Saved "+savedVidsAmount+" vids"+ " from "+ currChannel);
-    
-        nextPageToken = channelVidsResponse.NextPageToken; //uses token to get the next set of videos
-    }
-}
-
-
-string youtubePrefix = "https://www.youtube.com/watch?v=";
-
-//adds the videos from the list to a .txt
-using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurrentDirectory()+"/files", "videoList.txt"))) {
-    foreach(PlaylistItem currVid in youtubeVidList) {
-        outputFile.WriteLine(currVid.Snippet.Title+","+currVid.Snippet.ChannelTitle+","+youtubePrefix+currVid.ContentDetails.VideoId);
-    }
+    youtubeApi.SaveVideos(channelListFilepath, videoListFilepath, videoList);
 }
 
 /***********************************************************/
 /*read the songs and videos from the existing .txt files and then match them! results are added to results.txt*/
 
 
-string[] songList = File.ReadAllLines(Path.Combine(Directory.GetCurrentDirectory()+"/files", "songList.txt"));
-string[] vidList = File.ReadAllLines(Path.Combine(Directory.GetCurrentDirectory()+"/files", "videoList.txt"));
+string[] savedSongsList = File.ReadAllLines(songListFilepath);
+string[] savedVideosList = File.ReadAllLines(videoListFilepath);
 
 using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurrentDirectory()+"/files", "results.txt"))) {
-    foreach(string currSong in songList) {
+    foreach(string currSong in savedSongsList) {
         outputFile.WriteLine(currSong);
-        foreach(string currVid in vidList) {
+        foreach(string currVid in savedVideosList) {
             if(currVid.ToUpper().Contains(currSong.Substring(0, currSong.IndexOf("-")-1))) { //only doing exact matches to song title, all in uppercase for ease of matching
                 //add the channel, title. and link to the video in a nice format
                 int firstIndex = currVid.IndexOf(",");

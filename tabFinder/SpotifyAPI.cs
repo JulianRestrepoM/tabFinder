@@ -110,5 +110,24 @@ class SpotifyApi {
         }
         return songList; 
     }
+
+    public void SaveSongs(string fileLocation, List<Item>songList) {
+        //copies songs from list to file
+        using (StreamWriter outputFile = new StreamWriter(fileLocation)) {
+            foreach(Item currSong in songList) {
+                if(currSong.Track.Name.Contains("-")) { //some titles have extra info like Iron man - 2012 remastered, we want to remove everything after the -
+                    int index = currSong.Track.Name.IndexOf("-");
+                    currSong.Track.Name = currSong.Track.Name.Substring(0, index-1); //-1 to also remove the space before -
+                }
+                string artists = currSong.Track.Artists[0].Name;
+                string toWrite = currSong.Track.Name;
+                foreach(Artist currArtist in currSong.Track.Artists.Skip(1)) {
+                    artists += $", {currArtist.Name}";
+                }
+                outputFile.WriteLine($"{currSong.Track.Name.ToUpper()} - {artists}"); //seperate song title and artist by " - "
+
+            }
+        }
+    }
 }
 

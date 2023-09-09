@@ -9,6 +9,7 @@ using Google.Apis.YouTube.v3;
 using Google.Apis.Services;
 using Microsoft.VisualBasic;
 using Google.Apis.YouTube.v3.Data;
+using System.Collections.Generic;
 /***********************************************************/
 
 Console.WriteLine("Welcome to TAB Finder!");
@@ -16,7 +17,12 @@ Console.WriteLine("Welcome to TAB Finder!");
 /***********************************************************/
 /* Save songs from given spotify playlist to songList.txt*/
 
-string playlistId = "2jIOsU05KQRhTiHVjxpMns"; //put the playlist id
+string playlistId = "2jIOsU05KQRhTiHVjxpMns"; //all Julian's liked songs
+// string playlistId = "5qUj0OW96Y0Vyc3SUlXY6B"; //Julian's Stoner Metal +
+// string playlistId = "0VLlZwYaSFSf7ICCllGbHk"; //Julian's Ska/Punk +
+// string playlistId = "6Jkt9Ykx7MkaojsMSieByZ"; //Julian's Heavy+
+
+
 string songListFilepath = Path.Combine(Directory.GetCurrentDirectory()+"/files", "songList.txt");
 
 if(!File.Exists(songListFilepath)) {
@@ -53,21 +59,20 @@ if(!File.Exists(videoListFilepath)) {
 string[] savedSongsList = File.ReadAllLines(songListFilepath);
 string[] savedVideosList = File.ReadAllLines(videoListFilepath);
 
+CompareByArtistName compareByArtistName = new();
+
+Array.Sort(savedSongsList, compareByArtistName);
+
 using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurrentDirectory()+"/files", "results.txt"))) {
     foreach(string currSong in savedSongsList) {
         outputFile.WriteLine(currSong);
         foreach(string currVid in savedVideosList) {
             if(currVid.ToUpper().Contains(currSong.Substring(0, currSong.IndexOf("-")-1))) { //only doing exact matches to song title, all in uppercase for ease of matching
                 //add the channel, title. and link to the video in a nice format
-                int firstIndex = currVid.IndexOf(",");
-                int secondIndex = currVid.IndexOf(",", firstIndex+1);
-                int length = currVid.Length;
-                string channel = currVid.Substring(firstIndex+1, secondIndex-firstIndex);
-                string url = currVid.Substring(secondIndex+1);
-                string title = currVid.Substring(0, firstIndex);
-                outputFile.WriteLine("     "+channel);
-                outputFile.WriteLine("          "+title);
-                outputFile.WriteLine("          "+url);
+                string[] splitVid = currVid.Split(",");
+                outputFile.WriteLine("     "+splitVid[1]);
+                outputFile.WriteLine("          "+splitVid[0]);
+                outputFile.WriteLine("          "+splitVid[2]);
             }
         }
         outputFile.WriteLine(""); //empty space between songs

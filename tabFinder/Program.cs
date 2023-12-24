@@ -67,7 +67,7 @@ using (StreamWriter outputFile = new StreamWriter(Path.Combine(Directory.GetCurr
     foreach(string currSong in savedSongsList) {
         outputFile.WriteLine(currSong);
         foreach(string currVid in savedVideosList) {
-            if(currVid.ToUpper().Contains(currSong.Substring(0, currSong.IndexOf("-")-1))) { //only doing exact matches to song title, all in uppercase for ease of matching
+            if(BetterContains.Contains(currSong.Substring(0, currSong.IndexOf("-")-1), currVid.ToUpper())){
                 //add the channel, title. and link to the video in a nice format
                 string[] splitVid = currVid.Split(",");
                 outputFile.WriteLine("     "+splitVid[1]);

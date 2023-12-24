@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 class CompareByArtistName : IComparer<string> {
     public int Compare(string x, string y) {
@@ -12,5 +13,13 @@ class CompareByArtistName : IComparer<string> {
         string artistY = y.Split("-")[1];
 
         return artistX.CompareTo(artistY);
+    }
+}
+
+static class BetterContains {
+    public static bool Contains(string a, string b) {
+
+        string pattern = $@"\b{Regex.Escape(a)}\b";
+        return Regex.IsMatch(b, pattern);
     }
 }
